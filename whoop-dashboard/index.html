@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WHOOP Data Visualizer</title>
+  <meta name="description" content="Интерактивный визуализатор данных WHOOP: восстановление, сон, нагрузка, тренировки и привычки." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%233987e5'/><text x='50' y='68' font-size='58' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'>W</text></svg>" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand">
+        <div class="logo">W</div>
+        <div>
+          <h1>WHOOP Data Visualizer</h1>
+          <p class="sub">Полная визуализация экспорта WHOOP</p>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="range" id="dateRange">—</div>
+      <button class="theme-btn" id="themeBtn" title="Переключить тему">🌙 Тёмная</button>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="overview">Обзор</button>
+      <button class="tab" data-tab="recovery">Восстановление</button>
+      <button class="tab" data-tab="sleep">Сон</button>
+      <button class="tab" data-tab="strain">Нагрузка и тренировки</button>
+      <button class="tab" data-tab="behaviors">Привычки (журнал)</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- OVERVIEW -->
+    <section class="panel active" id="overview">
+      <div class="section-title">Ключевые показатели <span class="section-note">средние за весь период</span></div>
+      <div class="kpis" id="kpis"></div>
+
+      <div class="section-title">Восстановление и нагрузка по дням</div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Recovery Score</h3>
+          <p class="desc">Готовность организма. Зелёный ≥67%, жёлтый 34–66%, красный &lt;34%.</p>
+          <div class="chart-wrap"><canvas id="ovRecovery"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Day Strain</h3>
+          <p class="desc">Суточная нагрузка по шкале 0–21.</p>
+          <div class="chart-wrap"><canvas id="ovStrain"></canvas></div>
+        </div>
+      </div>
+      <div class="section-title">Сон и сердце</div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Продолжительность сна по стадиям</h3>
+          <p class="desc">Часы сна: лёгкий, глубокий, REM и бодрствование в постели.</p>
+          <div class="chart-wrap"><canvas id="ovSleepStages"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>HRV и пульс покоя</h3>
+          <p class="desc">Вариабельность (мс) и RHR (уд/мин) по дням.</p>
+          <div class="chart-wrap"><canvas id="ovHrvRhr"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECOVERY -->
+    <section class="panel" id="recovery">
+      <div class="section-title">Восстановление и вегетативная нервная система</div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Recovery Score %</h3>
+          <p class="desc">Цвет столбца = зона восстановления WHOOP.</p>
+          <div class="chart-wrap tall"><canvas id="recScore"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Распределение по зонам</h3>
+          <p class="desc">Сколько дней в каждой зоне восстановления.</p>
+          <div class="chart-wrap tall"><canvas id="recZones"></canvas></div>
+        </div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Вариабельность пульса (HRV)</h3>
+          <p class="desc">Миллисекунды. Выше — лучше восстановление.</p>
+          <div class="chart-wrap"><canvas id="recHrv"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Пульс покоя (RHR)</h3>
+          <p class="desc">Удары в минуту. Ниже — лучше.</p>
+          <div class="chart-wrap"><canvas id="recRhr"></canvas></div>
+        </div>
+      </div>
+      <div class="grid cols-3">
+        <div class="card">
+          <h3>Температура кожи</h3>
+          <p class="desc">°C</p>
+          <div class="chart-wrap"><canvas id="recSkin"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Насыщение кислородом (SpO₂)</h3>
+          <p class="desc">%</p>
+          <div class="chart-wrap"><canvas id="recO2"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Частота дыхания</h3>
+          <p class="desc">Вдохов в минуту</p>
+          <div class="chart-wrap"><canvas id="recResp"></canvas></div>
+        </div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Восстановление и нагрузка предыдущего дня</h3>
+          <p class="desc">Как нагрузка соотносится с восстановлением следующего дня (точки).</p>
+          <div class="chart-wrap"><canvas id="recVsStrain"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>HRV и восстановление</h3>
+          <p class="desc">Связь HRV (X) и Recovery % (Y).</p>
+          <div class="chart-wrap"><canvas id="recHrvScatter"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLEEP -->
+    <section class="panel" id="sleep">
+      <div class="section-title">Структура и качество сна</div>
+      <div class="grid">
+        <div class="card">
+          <h3>Стадии сна по ночам (часы)</h3>
+          <p class="desc">Лёгкий, глубокий (SWS), REM и время бодрствования. Наведите для деталей.</p>
+          <div class="chart-wrap tall"><canvas id="slStages"></canvas></div>
+        </div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Sleep Performance / Efficiency / Consistency</h3>
+          <p class="desc">Три показателя качества сна, %.</p>
+          <div class="chart-wrap"><canvas id="slQuality"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Сон, потребность и долг сна</h3>
+          <p class="desc">Фактический сон vs потребность (часы), долг сна.</p>
+          <div class="chart-wrap"><canvas id="slNeed"></canvas></div>
+        </div>
+      </div>
+      <div class="grid cols-3">
+        <div class="card">
+          <h3>Средний состав сна</h3>
+          <p class="desc">Доли стадий в среднем.</p>
+          <div class="chart-wrap"><canvas id="slDonut"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Частота дыхания во сне</h3>
+          <p class="desc">Вдохов в минуту.</p>
+          <div class="chart-wrap"><canvas id="slResp"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Время отхода ко сну</h3>
+          <p class="desc">Час засыпания (для отслеживания режима).</p>
+          <div class="chart-wrap"><canvas id="slOnset"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STRAIN & WORKOUTS -->
+    <section class="panel" id="strain">
+      <div class="section-title">Нагрузка, энергия и тренировки</div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Day Strain по дням</h3>
+          <p class="desc">Суточная нагрузка 0–21.</p>
+          <div class="chart-wrap"><canvas id="stStrain"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Сожжённые калории по дням</h3>
+          <p class="desc">Энергия, ккал.</p>
+          <div class="chart-wrap"><canvas id="stEnergy"></canvas></div>
+        </div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Тренировки по типам активности</h3>
+          <p class="desc">Количество тренировок каждого типа.</p>
+          <div class="chart-wrap"><canvas id="stActivityCount"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Суммарная нагрузка по типам</h3>
+          <p class="desc">Сумма Activity Strain по типам активности.</p>
+          <div class="chart-wrap"><canvas id="stActivityStrain"></canvas></div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Нагрузка и калории по каждой тренировке</h3>
+          <p class="desc">Точки: X — длительность (мин), Y — Activity Strain, размер — калории.</p>
+          <div class="chart-wrap tall"><canvas id="stWorkoutBubble"></canvas></div>
+        </div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Распределение по зонам пульса</h3>
+          <p class="desc">Среднее время в каждой зоне ЧСС по всем тренировкам, %.</p>
+          <div class="chart-wrap"><canvas id="stHrZones"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Средний и максимальный пульс тренировок</h3>
+          <p class="desc">Avg и Max HR по каждой тренировке.</p>
+          <div class="chart-wrap"><canvas id="stHr"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BEHAVIORS -->
+    <section class="panel" id="behaviors">
+      <div class="section-title">Дневник привычек (Journal)</div>
+      <div class="grid">
+        <div class="card">
+          <h3>Как часто отвечали «Да» на вопросы дневника</h3>
+          <p class="desc">Доля дней с ответом «Да» для каждого вопроса. Число справа — сколько записей.</p>
+          <div class="chart-wrap tall"><canvas id="bhYesRate"></canvas></div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Влияние привычек на восстановление</h3>
+          <p class="desc">Среднее Recovery % в дни с ответом «Да» и «Нет» для частых привычек.</p>
+          <div class="chart-wrap tall"><canvas id="bhImpact"></canvas></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Данные загружены из вашего экспорта WHOOP · <span id="footRange"></span> · Всё обрабатывается локально в браузере, ничего не отправляется на сервер.</p>
+  </footer>
+
+  <script src="chart.umd.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
