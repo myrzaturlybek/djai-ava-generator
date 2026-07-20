@@ -1,0 +1,10 @@
+# Netlify configuration for the WHOOP Data Visualizer (static site, no build step).
+[build]
+  publish = "whoop-dashboard"
+  command = ""
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
